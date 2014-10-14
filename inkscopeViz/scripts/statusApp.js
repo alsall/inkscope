@@ -34,7 +34,7 @@ StatusApp.controller("statusCtrl", function ($scope, $http , $cookieStore) {
         width: 300,
         height: 30,
         renderer: 'line',
-        series: new Rickshaw.Series.FixedDuration([{ name: 'read' },{ name: 'write' }], undefined, {
+        series: new Rickshaw.Series.FixedDuration([{ name: 'read' },{ name: 'write' },{ name: 'recovery' }], undefined, {
             timeInterval: 3000,
             maxDataPoints: 100,
             timeBase: new Date().getTime() / 1000
@@ -139,26 +139,40 @@ StatusApp.controller("statusCtrl", function ($scope, $http , $cookieStore) {
         $http({method: "get", url: apiURL + "status.json",timeout:4000})
             .success(function (data) {
                 $scope.pgmap = data.output.pgmap;
+                if ( typeof  data.output.pgmap.degraded_objects === "undefined" ) $scope.pgmap.degraded_objects=0;
+
+
                 $scope.mdsmap = data.output.mdsmap;
                 $scope.percentUsed = $scope.pgmap.bytes_used / $scope.pgmap.bytes_total;
                 $scope.pgsByState = $scope.pgmap.pgs_by_state;
 
                 $scope.read = (data.output.pgmap.read_bytes_sec ? data.output.pgmap.read_bytes_sec : 0);
                 $scope.write = (data.output.pgmap.write_bytes_sec ? data.output.pgmap.write_bytes_sec : 0);
+                $scope.recovery = (data.output.pgmap.recovering_bytes_per_sec ? data.output.pgmap.recovering_bytes_per_sec : 0);
 
-                var iopsdata = { read: $scope.read , write : $scope.write };
+                var iopsdata = { read: $scope.read , write : $scope.write , recovery : $scope.recovery };
                 graph.series.addData(iopsdata);
                 yAxis.render();
                 graph.render();
 
                 $scope.health = {};
                 $scope.health.severity = data.output.health.overall_status;
-                if (data.output.health.summary[0])
-                    $scope.health.summary = data.output.health.summary[0].summary;
-                else if (data.output.health.detail[0])
-                    $scope.health.summary = data.output.health.detail[0];
-                else
-                    $scope.health.summary = "OK";
+
+                // there may be several messages under data.output.health.summary
+                $scope.health.summary="";
+                var i = 0;
+                while(typeof data.output.health.summary[i] !== "undefined"){
+                    if ($scope.health.summary!="") $scope.health.summary+=" | ";
+                    $scope.health.summary += data.output.health.summary[i].summary;
+                    i++;
+                }
+                if ($scope.health.summary==""){
+                    if (data.output.health.detail[0])
+                        $scope.health.summary = data.output.health.detail[0];
+                    else
+                        //remove HEALTH_ in severity
+                        $scope.health.summary = $scope.health.severity.substring(7);
+                }
 
                 historise();
 
@@ -227,6 +241,11 @@ StatusApp.controller("statusCtrl", function ($scope, $http , $cookieStore) {
     $scope.showModule = function(module,view){
         $cookieStore.put(module,view);
         $scope[module]=view;
+    }
+
+    $scope.getPgmapMessage=function(){
+        if ((typeof  $scope.pgmap.degraded_objects ==="undefined" )||($scope.pgmap.degraded_objects==0)) return "";
+        return $scope.pgmap.degraded_objects +" objects degraded on "+$scope.pgmap.degraded_total +" ("+ $scope.pgmap.degraded_ratio +"%)";
     }
 
     function historise() {

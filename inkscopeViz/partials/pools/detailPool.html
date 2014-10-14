@@ -1,20 +1,34 @@
 <h3>Pool details for {{detailedPool.pool_name}}</h3>
-<br />
-
+<br>
 <div class="button-bar">
-    <a href="#/snapshot/{{detailedPool.pool}}/{{detailedPool.pool_name}}" class="btn btn-info"><i class="icon-white icon-camera"></i> make snapshot </a>
-    <button ng-click="removeSnapshot()" class="btn btn-danger" ng-show="hasSnap"><i class="icon-white icon-camera"></i> remove snapshot </button>
+    <a href="#/snapshot/{{detailedPool.pool}}/{{detailedPool.pool_name}}" class="btn btn-info" style="float:left"><i class="icon-white icon-camera"></i> make snapshot </a>
+    <button ng-click="removeSnapshot()" class="btn btn-danger"  style="float:left;margin-left:5px" ng-show="hasSnap"><i class="icon-white icon-camera"></i> remove snapshot </button>
     <div style="width:35px;display: inline-block"></div>
     <a href="#/modify/{{detailedPool.pool}}" class="btn btn-success">Modify</a>
     <a href="#/delete/{{detailedPool.pool}}/{{detailedPool.pool_name}}" class="btn btn-danger">Delete</a>
     <a href="#/" class="btn btn-default">Close</a>
 </div>
-
-<br /><br />
-<table  class="table table-condensed table-nohead">
-    <tbody>
-    <tr ng-repeat="(key, value) in detailedPool">
-        <td width="150px"> {{key.replace('_',' ', 'gi')}} </td> <td> {{ value }} </td>
+<br />
+<table ng-table="poolParams"  template-pagination="custom/pager" class="table table-condensed">
+    <thead><tr><th></th></tr></thead>
+    <tbody ng-repeat="group in $groups">
+    <tr class="ng-table-group" ng-init="checkGroup(group)">
+        <td colspan="{{$columns.length}}">
+            <a href="" ng-click="group.$hideRows = !group.$hideRows">
+                <span class="glyphicon" ng-class="{ 'glyphicon-chevron-right': group.$hideRows, 'glyphicon-chevron-down': !group.$hideRows }"></span>
+                <strong>{{ group.value }}</strong>
+            </a>
+        </td>
+    </tr>
+    <tr ng-hide="group.$hideRows" ng-repeat="parameter in group.data">
+        <td data-title="'Key'">
+            {{parameter.key}}
+        </td>
+        <td data-title="'Value'">
+            <span ng-bind-html="parameter.value"></span>
+        </td>
     </tr>
     </tbody>
 </table>
+<!-- empty custom pager to avoid pager showing before being hidden -->
+<script type="text/ng-template" id="custom/pager"></script>

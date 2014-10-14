@@ -90,7 +90,8 @@ label {
 
 .button-bar {
     clear: both;
-    float: right;
+    width: 100%;
+    text-align: right;
 }
 
 #control{
@@ -156,6 +157,8 @@ label {
     line-height:45px;
     border-radius: 10px;
     margin:20px auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 /* Mon status */
 #general_status, .general_status, #mon_status {
@@ -244,7 +247,7 @@ label {
 }
 #pg_status_graph {
     width:320px;
-    height: 335px;
+    height: 310px;
     margin-right: 10px;
     background-color: white;
     float : left;

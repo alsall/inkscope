@@ -24,11 +24,16 @@
     <script>
         function resize(){
         var header = document.querySelector("#header");
-        var height = window.innerHeight-200;
+        var height = window.innerHeight-250;
         var control = document.querySelector("#control");
         control.style.maxHeight = height+"px";
         }
-    </script></head>
+    </script>
+    <style>
+        .glyphicon-chevron-down:before  {content: "\25BC";}
+        .glyphicon-chevron-right:before {content: "\25B6";}
+    </style>
+</head>
 <body ng-controller="ListCtrl">
 
 
@@ -36,7 +41,9 @@
 
 <div>
 <!--div id="status"  >{{status}}</div-->
-<div id="listpool">
+    <div id="datePanel"><br>Date : {{date | date:'HH:mm:ss'}}</div>
+
+    <div id="listpool">
     <table>
         <tr>
             <th><input type="text" ng-model="search.name" class="search-query" placeholder="Search pool name"></th>
@@ -45,7 +52,7 @@
         </tr>
     </table>
     <br>
-    <table ng-table="tableParams" class="table table-condensed table-hover clickable">
+    <table ng-table="tableParams" class="table table-condensed clickable">
         <tr ng-repeat="pool in orderedData | filter:search:strict" ng-click="showDetail(pool.id)">
             <td data-title="'Id'" sortable="'id'">{{pool.id}}</td>
             <td data-title="'Pool'" sortable="'name'">{{pool.name}}</td>

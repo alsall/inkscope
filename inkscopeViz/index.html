@@ -65,6 +65,7 @@
             font-family: Arial, Helvetica, sans-serif;
             float:right;
         text-align: right;
+        font-size: .85em;
         }
     #iopschart {
             position: relative;
@@ -130,7 +131,7 @@
     <div id="chart_container">
         <div id="y_axis"></div>
         <div id="iopschart"></div>
-        Read : {{ read | bytes:kB }}/s , Write : {{ write | bytes:kB }}/s
+        Read : {{ read | bytes:kB }}/s , Write : {{ write | bytes:kB }} , Recovery : {{ recovery | bytes:kB }}/s
     </div>
     <h2>Cluster health at {{date | date:'HH:mm:ss'}}</h2>
     <div class="health_summary health_status_{{health.severity}}">{{health.summary}}</div>
@@ -214,9 +215,13 @@
 <div id="pg_status" ng-show="viewPgStatusModule" class="animate-show">
     <i class="icon-remove closeButton" title="hide" alt="hide" ng-click="showModule('viewPgStatusModule',false)" style="float:right"></i>
     <h2 onclick="document.location='poolspgsosds.html'" style="cursor:pointer">{{pgmap.num_pgs}} Placement groups</h2>
-
+    <div ng-show="pgmap.degraded_objects!=0">
+        <p class="text-warning"><i class="icon-warning-sign" ></i>
+            {{ getPgmapMessage() }}
+        </p>
+    </div>
     <div id="pg_status_graph">
-        <ad-pie id="pie01" value="pgsByState" width="350" labelfield="state_name" valuefield="count"></ad-pie>
+        <ad-pie id="pie01" value="pgsByState" width="330" labelfield="state_name" valuefield="count"></ad-pie>
     </div>
 
 </div>
@@ -237,7 +242,9 @@
     <i class="icon-remove closeButton" title="hide" alt="hide" ng-click="showModule('viewOsdModule',false)" style="float:right"></i>
     <h2 onclick="document.location='osds.html'" class="clickable">{{osdsUp + osdsDown}} OSD </h2>
     <div ng-hide="osdControl<30">
+        <a href="probes.html">
         <p class="text-warning"><i class="icon-warning-sign" ></i> osds not verified<br>since {{osdControl|duration}}</p>
+        </a>
     </div>
 
     <div id="osd_status_details">
